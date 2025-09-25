@@ -126,14 +126,14 @@ export default function Contact() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="pt-24 pb-12">
+      <div className="pt-24 pb-12 overflow-x-hidden">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-primary/10 to-blue-50 py-8 md:py-16">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <h1 className="text-3xl md:text-5xl font-poppins font-bold text-gray-900 mb-4 md:mb-6">
+          <div className="max-w-4xl mx-auto px-4 text-center overflow-x-hidden">
+            <h1 className="text-3xl md:text-5xl font-poppins font-bold text-gray-900 mb-4 md:mb-6 break-words">
               Get In Touch With Us
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto break-words">
               Have questions about studying in Canada? Our expert team is here to help you every step of the way. 
               Contact us today for personalized guidance.
             </p>
@@ -142,11 +142,11 @@ export default function Contact() {
 
         {/* Contact Information */}
         <section className="py-8 md:py-16">
-          <div className="max-w-6xl mx-auto px-4">
+          <div className="max-w-4xl mx-auto px-4">
             <h2 className="text-2xl md:text-4xl font-poppins font-bold text-center text-gray-900 mb-8 md:mb-12">
               Contact Information
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               {contactInfo.map((info, index) => (
                 <Card key={index} className="text-center" padding="md" data-testid={`contact-info-${index}`}>
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
@@ -171,7 +171,7 @@ export default function Contact() {
         {/* Contact Form and Map */}
         <section className="py-8 md:py-16 bg-white">
           <div className="max-w-4xl mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
+            <div className="grid lg:grid-cols-2 gap-4 lg:gap-8">
               {/* Contact Form */}
               <div>
                 {isSubmitted ? (
@@ -190,7 +190,7 @@ export default function Contact() {
                   <form onSubmit={handleSubmit(onSubmit)}>
                     <Card title="Send Us a Message">
                       <div className="space-y-6">
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Full Name *
@@ -230,7 +230,7 @@ export default function Contact() {
                           </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Phone Number *
@@ -362,11 +362,11 @@ export default function Contact() {
 
         {/* Other Offices */}
         <section className="py-8 md:py-16">
-          <div className="max-w-6xl mx-auto px-4">
+          <div className="max-w-4xl mx-auto px-4">
             <h2 className="text-2xl md:text-4xl font-poppins font-bold text-center text-gray-900 mb-8 md:mb-12">
               Our Other Offices
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               {offices.map((office, index) => (
                 <Card key={index} padding="md" data-testid={`office-${index}`}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
