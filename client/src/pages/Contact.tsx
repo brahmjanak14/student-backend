@@ -146,9 +146,9 @@ export default function Contact() {
             <h2 className="text-2xl md:text-4xl font-poppins font-bold text-center text-gray-900 mb-8 md:mb-12">
               Contact Information
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
               {contactInfo.map((info, index) => (
-                <Card key={index} className="text-center" padding="lg" data-testid={`contact-info-${index}`}>
+                <Card key={index} className="text-center" padding="md" data-testid={`contact-info-${index}`}>
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
                     {info.icon}
                   </div>
@@ -157,7 +157,7 @@ export default function Contact() {
                   </h3>
                   <div className="space-y-1">
                     {info.details.map((detail, idx) => (
-                      <p key={idx} className="text-gray-600 text-sm">
+                      <p key={idx} className="text-gray-600 text-sm break-words overflow-wrap-anywhere">
                         {detail}
                       </p>
                     ))}
@@ -170,16 +170,12 @@ export default function Contact() {
 
         {/* Contact Form and Map */}
         <section className="py-8 md:py-16 bg-white">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+          <div className="max-w-4xl mx-auto px-4">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
               {/* Contact Form */}
               <div>
-                <h3 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900 mb-6 md:mb-8">
-                  Send Us a Message
-                </h3>
-                
                 {isSubmitted ? (
-                  <Card className="text-center" padding="lg">
+                  <Card title="Message Sent!" className="text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                       <CheckCircle className="w-8 h-8 text-green-600" />
                     </div>
@@ -191,170 +187,172 @@ export default function Contact() {
                     </p>
                   </Card>
                 ) : (
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Full Name *
-                        </label>
-                        <input
-                          type="text"
-                          {...register("name", { required: "Name is required" })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                          placeholder="Enter your full name"
-                          data-testid="input-name"
-                        />
-                        {errors.name && (
-                          <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-                        )}
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address *
-                        </label>
-                        <input
-                          type="email"
-                          {...register("email", { 
-                            required: "Email is required",
-                            pattern: {
-                              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                              message: "Invalid email address"
-                            }
-                          })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                          placeholder="Enter your email"
-                          data-testid="input-email"
-                        />
-                        {errors.email && (
-                          <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-                        )}
-                      </div>
-                    </div>
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    <Card title="Send Us a Message">
+                      <div className="space-y-6">
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Full Name *
+                            </label>
+                            <input
+                              type="text"
+                              {...register("name", { required: "Name is required" })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                              placeholder="Enter your full name"
+                              data-testid="input-name"
+                            />
+                            {errors.name && (
+                              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                            )}
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Email Address *
+                            </label>
+                            <input
+                              type="email"
+                              {...register("email", { 
+                                required: "Email is required",
+                                pattern: {
+                                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                  message: "Invalid email address"
+                                }
+                              })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                              placeholder="Enter your email"
+                              data-testid="input-email"
+                            />
+                            {errors.email && (
+                              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                            )}
+                          </div>
+                        </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Phone Number *
-                        </label>
-                        <input
-                          type="tel"
-                          {...register("phone", { required: "Phone number is required" })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                          placeholder="Enter your phone number"
-                          data-testid="input-phone"
-                        />
-                        {errors.phone && (
-                          <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>
-                        )}
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Subject *
-                        </label>
-                        <select
-                          {...register("subject", { required: "Subject is required" })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                          data-testid="select-subject"
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Phone Number *
+                            </label>
+                            <input
+                              type="tel"
+                              {...register("phone", { required: "Phone number is required" })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                              placeholder="Enter your phone number"
+                              data-testid="input-phone"
+                            />
+                            {errors.phone && (
+                              <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>
+                            )}
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Subject *
+                            </label>
+                            <select
+                              {...register("subject", { required: "Subject is required" })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                              data-testid="select-subject"
+                            >
+                              <option value="">Select a subject</option>
+                              <option value="visa-consultation">Visa Consultation</option>
+                              <option value="university-selection">University Selection</option>
+                              <option value="document-preparation">Document Preparation</option>
+                              <option value="scholarship-guidance">Scholarship Guidance</option>
+                              <option value="other">Other</option>
+                            </select>
+                            {errors.subject && (
+                              <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Message *
+                          </label>
+                          <textarea
+                            {...register("message", { required: "Message is required" })}
+                            rows={6}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                            placeholder="Tell us about your requirements or questions..."
+                            data-testid="textarea-message"
+                          />
+                          {errors.message && (
+                            <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+                          )}
+                        </div>
+
+                        <Button
+                          type="submit"
+                          size="lg"
+                          disabled={isSubmitting}
+                          className="w-full"
+                          data-testid="button-submit-contact"
                         >
-                          <option value="">Select a subject</option>
-                          <option value="visa-consultation">Visa Consultation</option>
-                          <option value="university-selection">University Selection</option>
-                          <option value="document-preparation">Document Preparation</option>
-                          <option value="scholarship-guidance">Scholarship Guidance</option>
-                          <option value="other">Other</option>
-                        </select>
-                        {errors.subject && (
-                          <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>
-                        )}
+                          {isSubmitting ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Sending Message...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-4 h-4 mr-2" />
+                              Send Message
+                            </>
+                          )}
+                        </Button>
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Message *
-                      </label>
-                      <textarea
-                        {...register("message", { required: "Message is required" })}
-                        rows={6}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-                        placeholder="Tell us about your requirements or questions..."
-                        data-testid="textarea-message"
-                      />
-                      {errors.message && (
-                        <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
-                      )}
-                    </div>
-
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={isSubmitting}
-                      className="w-full"
-                      data-testid="button-submit-contact"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Sending Message...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4 mr-2" />
-                          Send Message
-                        </>
-                      )}
-                    </Button>
+                    </Card>
                   </form>
                 )}
               </div>
 
               {/* Map and Additional Info */}
-              <div>
-                <h3 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900 mb-6 md:mb-8">
-                  Visit Our Office
-                </h3>
+              <div className="lg:mt-0 mt-8">
+                <Card title="Visit Our Office">
                 
                 {/* Map Placeholder */}
                 <div className="bg-gray-200 h-48 md:h-64 rounded-lg flex items-center justify-center mb-6 md:mb-8">
-                  <div className="text-center">
+                  <div className="text-center px-4">
                     <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-gray-500">Interactive Map</p>
-                    <p className="text-sm text-gray-400">123 Business District, Gurgaon</p>
+                    <p className="text-sm text-gray-400 break-words">123 Business District, Gurgaon</p>
                   </div>
-                </div>
+                  </div>
 
-                {/* Quick Contact */}
-                <Card padding="lg">
-                  <h4 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">
-                    Quick Contact
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-5 h-5 text-primary" />
-                      <span className="text-gray-600">+91 9876543210</span>
+                  <div className="mt-6">
+                    <h4 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">
+                      Quick Contact
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Phone className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span className="text-gray-600 break-words min-w-0">+91 9876543210</span>
+                      </div>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Mail className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span className="text-gray-600 break-words min-w-0 overflow-wrap-anywhere">info@prathaminternational.com</span>
+                      </div>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <MessageSquare className="w-5 h-5 text-primary flex-shrink-0" />
+                        <span className="text-gray-600 break-words min-w-0">WhatsApp: +91 9876543210</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Mail className="w-5 h-5 text-primary" />
-                      <span className="text-gray-600">info@prathaminternational.com</span>
+                    
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => setLocation('/eligibility')}
+                        data-testid="button-free-assessment"
+                      >
+                        Get Free Assessment
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <MessageSquare className="w-5 h-5 text-primary" />
-                      <span className="text-gray-600">WhatsApp: +91 9876543210</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => setLocation('/eligibility')}
-                      data-testid="button-free-assessment"
-                    >
-                      Get Free Assessment
-                    </Button>
                   </div>
                 </Card>
               </div>
@@ -368,20 +366,20 @@ export default function Contact() {
             <h2 className="text-2xl md:text-4xl font-poppins font-bold text-center text-gray-900 mb-8 md:mb-12">
               Our Other Offices
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
               {offices.map((office, index) => (
-                <Card key={index} padding="lg" data-testid={`office-${index}`}>
+                <Card key={index} padding="md" data-testid={`office-${index}`}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
                     {office.city}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-3">
+                  <p className="text-gray-600 text-sm mb-3 break-words">
                     {office.address}
                   </p>
                   <div className="space-y-1">
-                    <p className="text-primary text-sm font-medium">
+                    <p className="text-primary text-sm font-medium break-words">
                       {office.phone}
                     </p>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-gray-500 text-sm break-words overflow-wrap-anywhere">
                       {office.email}
                     </p>
                   </div>
@@ -399,11 +397,11 @@ export default function Contact() {
             </h2>
             <div className="space-y-4 md:space-y-6">
               {faqs.map((faq, index) => (
-                <Card key={index} padding="lg" data-testid={`faq-${index}`}>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <Card key={index} padding="md" data-testid={`faq-${index}`}>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 break-words">
                     {faq.question}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 break-words">
                     {faq.answer}
                   </p>
                 </Card>
