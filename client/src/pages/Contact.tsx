@@ -128,12 +128,12 @@ export default function Contact() {
       
       <div className="pt-24 pb-12">
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-primary/10 to-blue-50 py-16">
+        <section className="bg-gradient-to-r from-primary/10 to-blue-50 py-8 md:py-16">
           <div className="max-w-4xl mx-auto px-4 text-center">
-            <h1 className="text-5xl font-poppins font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl md:text-5xl font-poppins font-bold text-gray-900 mb-4 md:mb-6">
               Get In Touch With Us
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
               Have questions about studying in Canada? Our expert team is here to help you every step of the way. 
               Contact us today for personalized guidance.
             </p>
@@ -141,12 +141,12 @@ export default function Contact() {
         </section>
 
         {/* Contact Information */}
-        <section className="py-16">
+        <section className="py-8 md:py-16">
           <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-4xl font-poppins font-bold text-center text-gray-900 mb-12">
+            <h2 className="text-2xl md:text-4xl font-poppins font-bold text-center text-gray-900 mb-8 md:mb-12">
               Contact Information
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {contactInfo.map((info, index) => (
                 <Card key={index} className="text-center" padding="lg" data-testid={`contact-info-${index}`}>
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
@@ -169,12 +169,12 @@ export default function Contact() {
         </section>
 
         {/* Contact Form and Map */}
-        <section className="py-16 bg-white">
+        <section className="py-8 md:py-16 bg-white">
           <div className="max-w-6xl mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-12">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
               {/* Contact Form */}
               <div>
-                <h3 className="text-3xl font-poppins font-bold text-gray-900 mb-8">
+                <h3 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900 mb-6 md:mb-8">
                   Send Us a Message
                 </h3>
                 
@@ -183,7 +183,7 @@ export default function Contact() {
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                       <CheckCircle className="w-8 h-8 text-green-600" />
                     </div>
-                    <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h4 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
                       Message Sent Successfully!
                     </h4>
                     <p className="text-gray-600">
@@ -192,7 +192,7 @@ export default function Contact() {
                   </Card>
                 ) : (
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Full Name *
@@ -232,7 +232,7 @@ export default function Contact() {
                       </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Phone Number *
@@ -312,12 +312,12 @@ export default function Contact() {
 
               {/* Map and Additional Info */}
               <div>
-                <h3 className="text-3xl font-poppins font-bold text-gray-900 mb-8">
+                <h3 className="text-2xl md:text-3xl font-poppins font-bold text-gray-900 mb-6 md:mb-8">
                   Visit Our Office
                 </h3>
                 
                 {/* Map Placeholder */}
-                <div className="bg-gray-200 h-64 rounded-lg flex items-center justify-center mb-8">
+                <div className="bg-gray-200 h-48 md:h-64 rounded-lg flex items-center justify-center mb-6 md:mb-8">
                   <div className="text-center">
                     <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-gray-500">Interactive Map</p>
@@ -327,7 +327,7 @@ export default function Contact() {
 
                 {/* Quick Contact */}
                 <Card padding="lg">
-                  <h4 className="text-xl font-semibold text-gray-900 mb-4">
+                  <h4 className="text-lg md:text-xl font-semibold text-gray-900 mb-4">
                     Quick Contact
                   </h4>
                   <div className="space-y-3">
@@ -363,12 +363,12 @@ export default function Contact() {
         </section>
 
         {/* Other Offices */}
-        <section className="py-16">
+        <section className="py-8 md:py-16">
           <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-4xl font-poppins font-bold text-center text-gray-900 mb-12">
+            <h2 className="text-2xl md:text-4xl font-poppins font-bold text-center text-gray-900 mb-8 md:mb-12">
               Our Other Offices
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {offices.map((office, index) => (
                 <Card key={index} padding="lg" data-testid={`office-${index}`}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
@@ -392,12 +392,12 @@ export default function Contact() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 bg-white">
+        <section className="py-8 md:py-16 bg-white">
           <div className="max-w-4xl mx-auto px-4">
-            <h2 className="text-4xl font-poppins font-bold text-center text-gray-900 mb-12">
+            <h2 className="text-2xl md:text-4xl font-poppins font-bold text-center text-gray-900 mb-8 md:mb-12">
               Frequently Asked Questions
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {faqs.map((faq, index) => (
                 <Card key={index} padding="lg" data-testid={`faq-${index}`}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">
