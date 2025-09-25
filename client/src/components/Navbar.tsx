@@ -1,5 +1,4 @@
 import { Link, useLocation } from "wouter";
-import { ChevronDown, Phone } from "lucide-react";
 
 interface NavbarProps {
   className?: string;
@@ -9,17 +8,16 @@ export default function Navbar({ className = "" }: NavbarProps) {
   const [location] = useLocation();
 
   const navItems = [
-    { label: "Study Abroad", path: "/study-abroad", hasDropdown: true },
-    { label: "Test Prep", path: "/test-prep", hasDropdown: true },
-    { label: "Services", path: "/services", hasDropdown: true },
-    { label: "Finance", path: "/finance", hasDropdown: true },
-    { label: "More", path: "/more", hasDropdown: true },
+    { label: "Home", path: "/" },
+    { label: "Check Eligibility", path: "/eligibility" },
+    { label: "About", path: "/about" },
+    { label: "Contact", path: "/contact" },
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 ${className}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <nav className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 ${className}`}>
+      <div className="bg-white/70 backdrop-blur-lg border border-white/20 rounded-full px-8 py-3 shadow-lg">
+        <div className="flex items-center gap-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover-elevate rounded-lg px-2 py-1" data-testid="link-home">
             <img 
@@ -27,44 +25,37 @@ export default function Navbar({ className = "" }: NavbarProps) {
               alt="Pratham International" 
               className="h-8 w-auto"
             />
-            <span className="font-poppins font-semibold text-primary text-lg hidden md:block">
+            <span className="font-poppins font-semibold text-primary text-sm hidden md:block">
               Pratham International
             </span>
           </Link>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary px-2 py-2 ${
+                className={`text-sm font-medium transition-colors hover:text-primary hover-elevate rounded-lg px-3 py-2 ${
                   location === item.path 
                     ? "text-primary font-semibold" 
-                    : "text-gray-700"
+                    : "text-gray-600"
                 }`}
                 data-testid={`link-${item.label.toLowerCase().replace(' ', '-')}`}
               >
                 {item.label}
-                {item.hasDropdown && <ChevronDown className="w-4 h-4" />}
               </Link>
             ))}
           </div>
 
-          {/* Right Side - Phone & CTA */}
-          <div className="flex items-center gap-4">
-            <div className="hidden lg:flex items-center gap-2 text-gray-700">
-              <Phone className="w-4 h-4" />
-              <span className="text-sm font-medium">+91 9876543210</span>
-            </div>
-            <Link 
-              href="/eligibility" 
-              className="bg-green-600 text-white hover-elevate active-elevate-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:shadow-md hover:bg-green-700"
-              data-testid="button-get-started"
-            >
-              Get Started
-            </Link>
-          </div>
+          {/* CTA Button */}
+          <Link 
+            href="/eligibility" 
+            className="bg-primary text-primary-foreground hover-elevate active-elevate-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:shadow-md"
+            data-testid="button-start-assessment"
+          >
+            Start Assessment
+          </Link>
         </div>
       </div>
     </nav>
