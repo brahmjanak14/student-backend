@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
+import BottomNavigation from "@/components/BottomNavigation";
 
 // Import main pages
 import Landing from "@/pages/Landing";
@@ -54,8 +55,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white pb-16 md:pb-0">
           <Router />
+          <BottomNavigation />
         </div>
         <Toaster />
       </TooltipProvider>
