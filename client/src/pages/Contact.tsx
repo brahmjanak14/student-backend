@@ -19,12 +19,6 @@ interface ContactFormData {
   email: string;
   phone: string;
   subject: string;
-  education: string;
-  educationGrade: string;
-  gradeType: string;
-  hasLanguageTest: string;
-  languageTest: string;
-  ieltsScore: string;
   message: string;
 }
 
@@ -36,13 +30,8 @@ export default function Contact() {
     register,
     handleSubmit,
     reset,
-    watch,
     formState: { errors },
   } = useForm<ContactFormData>();
-
-  const education = watch("education");
-  const hasLanguageTest = watch("hasLanguageTest");
-  const languageTest = watch("languageTest");
 
   const contactInfo = [
     {
@@ -325,190 +314,6 @@ export default function Contact() {
                             )}
                           </div>
                         </div>
-
-                        {/* Education Section */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            What is your last education? *
-                          </label>
-                          <select
-                            {...register("education", {
-                              required: "Education is required",
-                            })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                            data-testid="select-education"
-                          >
-                            <option value="">Select your education</option>
-                            <option value="12th">12th Standard</option>
-                            <option value="bachelor">Bachelor's Degree</option>
-                            <option value="master">Master's Degree</option>
-                          </select>
-                          {errors.education && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.education.message}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Education Grade Section */}
-                        {education && (
-                          <div className="grid lg:grid-cols-2 gap-4">
-                            {education === "12th" ? (
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  12th Standard Percentage *
-                                </label>
-                                <input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  max="100"
-                                  {...register("educationGrade", {
-                                    required: "Percentage is required",
-                                  })}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                                  placeholder="Enter percentage (e.g., 85)"
-                                  data-testid="input-percentage"
-                                />
-                                {errors.educationGrade && (
-                                  <p className="text-red-500 text-sm mt-1">
-                                    {errors.educationGrade.message}
-                                  </p>
-                                )}
-                              </div>
-                            ) : (
-                              <>
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Grade Type *
-                                  </label>
-                                  <select
-                                    {...register("gradeType", {
-                                      required: "Grade type is required",
-                                    })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                                    data-testid="select-grade-type"
-                                  >
-                                    <option value="">Select grade type</option>
-                                    <option value="cgpa">CGPA</option>
-                                    <option value="percentage">Percentage</option>
-                                  </select>
-                                  {errors.gradeType && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                      {errors.gradeType.message}
-                                    </p>
-                                  )}
-                                </div>
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    {watch("gradeType") === "cgpa" ? "CGPA *" : "Percentage *"}
-                                  </label>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    max={watch("gradeType") === "cgpa" ? "10" : "100"}
-                                    {...register("educationGrade", {
-                                      required: `${watch("gradeType") === "cgpa" ? "CGPA" : "Percentage"} is required`,
-                                    })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                                    placeholder={
-                                      watch("gradeType") === "cgpa"
-                                        ? "Enter CGPA (e.g., 8.5)"
-                                        : "Enter percentage (e.g., 85)"
-                                    }
-                                    data-testid="input-grade"
-                                  />
-                                  {errors.educationGrade && (
-                                    <p className="text-red-500 text-sm mt-1">
-                                      {errors.educationGrade.message}
-                                    </p>
-                                  )}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Language Test Section */}
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Step 2: Language Test
-                          </h4>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Have you applied for language test? *
-                          </label>
-                          <select
-                            {...register("hasLanguageTest", {
-                              required: "This field is required",
-                            })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                            data-testid="select-language-test"
-                          >
-                            <option value="">Select option</option>
-                            <option value="yes">Yes</option>
-                            <option value="no">No</option>
-                          </select>
-                          {errors.hasLanguageTest && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.hasLanguageTest.message}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Language Test Type */}
-                        {hasLanguageTest === "yes" && (
-                          <div className="grid lg:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Which language test? *
-                              </label>
-                              <select
-                                {...register("languageTest", {
-                                  required: "Language test is required",
-                                })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                                data-testid="select-language-test-type"
-                              >
-                                <option value="">Select language test</option>
-                                <option value="ielts">IELTS</option>
-                                <option value="toefl">TOEFL</option>
-                                <option value="gre">GRE</option>
-                              </select>
-                              {errors.languageTest && (
-                                <p className="text-red-500 text-sm mt-1">
-                                  {errors.languageTest.message}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* IELTS Score */}
-                            {languageTest === "ielts" && (
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  What's your IELTS bands? *
-                                </label>
-                                <input
-                                  type="number"
-                                  step="0.5"
-                                  min="0"
-                                  max="9"
-                                  {...register("ieltsScore", {
-                                    required: "IELTS score is required",
-                                  })}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                                  placeholder="Enter IELTS bands (e.g., 7.5)"
-                                  data-testid="input-ielts-score"
-                                />
-                                {errors.ieltsScore && (
-                                  <p className="text-red-500 text-sm mt-1">
-                                    {errors.ieltsScore.message}
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">

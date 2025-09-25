@@ -7,18 +7,14 @@ import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 
 interface FormData {
   // Academic Details
-  tenth_percentage: string;
-  twelfth_percentage: string;
-  bachelor_cgpa: string;
-  bachelor_percentage: string;
+  education: string;
+  educationGrade: string;
+  gradeType: string;
   
-  // Language Scores
-  test_type: string;
-  listening_score: string;
-  reading_score: string;
-  writing_score: string;
-  speaking_score: string;
-  overall_score: string;
+  // Language Test
+  hasLanguageTest: string;
+  languageTest: string;
+  ieltsScore: string;
   
   // Work Experience
   has_work_experience: string;
@@ -40,6 +36,10 @@ export default function EligibilityForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>();
+
+  const education = watch("education");
+  const hasLanguageTest = watch("hasLanguageTest");
+  const languageTest = watch("languageTest");
 
   const totalSteps = 4;
   const hasWorkExperience = watch("has_work_experience") === "yes";
@@ -113,157 +113,193 @@ export default function EligibilityForm() {
               {/* Step 1: Academic Background */}
               {currentStep === 1 && (
                 <div className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        10th Standard Percentage *
-                      </label>
-                      <input
-                        type="number"
-                        {...register("tenth_percentage", { required: "This field is required", min: 0, max: 100 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="Enter percentage (e.g., 85)"
-                        data-testid="input-tenth-percentage"
-                      />
-                      {errors.tenth_percentage && (
-                        <p className="text-red-500 text-sm mt-1">{errors.tenth_percentage.message}</p>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        12th Standard Percentage *
-                      </label>
-                      <input
-                        type="number"
-                        {...register("twelfth_percentage", { required: "This field is required", min: 0, max: 100 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="Enter percentage (e.g., 87)"
-                        data-testid="input-twelfth-percentage"
-                      />
-                      {errors.twelfth_percentage && (
-                        <p className="text-red-500 text-sm mt-1">{errors.twelfth_percentage.message}</p>
-                      )}
-                    </div>
+                  {/* Education Level */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      What is your last education? *
+                    </label>
+                    <select
+                      {...register("education", {
+                        required: "Education is required",
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      data-testid="select-education"
+                    >
+                      <option value="">Select your education</option>
+                      <option value="12th">12th Standard</option>
+                      <option value="bachelor">Bachelor's Degree</option>
+                      <option value="master">Master's Degree</option>
+                    </select>
+                    {errors.education && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.education.message}
+                      </p>
+                    )}
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bachelor's CGPA *
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        {...register("bachelor_cgpa", { required: "This field is required", min: 0, max: 10 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="Enter CGPA (e.g., 7.5)"
-                        data-testid="input-bachelor-cgpa"
-                      />
-                      {errors.bachelor_cgpa && (
-                        <p className="text-red-500 text-sm mt-1">{errors.bachelor_cgpa.message}</p>
+                  {/* Education Grade Section */}
+                  {education && (
+                    <div className="grid lg:grid-cols-2 gap-4">
+                      {education === "12th" ? (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            12th Standard Percentage *
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="100"
+                            {...register("educationGrade", {
+                              required: "Percentage is required",
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Enter percentage (e.g., 85)"
+                            data-testid="input-percentage"
+                          />
+                          {errors.educationGrade && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.educationGrade.message}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Grade Type *
+                            </label>
+                            <select
+                              {...register("gradeType", {
+                                required: "Grade type is required",
+                              })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                              data-testid="select-grade-type"
+                            >
+                              <option value="">Select grade type</option>
+                              <option value="cgpa">CGPA</option>
+                              <option value="percentage">Percentage</option>
+                            </select>
+                            {errors.gradeType && (
+                              <p className="text-red-500 text-sm mt-1">
+                                {errors.gradeType.message}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              {watch("gradeType") === "cgpa" ? "CGPA *" : "Percentage *"}
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max={watch("gradeType") === "cgpa" ? "10" : "100"}
+                              {...register("educationGrade", {
+                                required: `${watch("gradeType") === "cgpa" ? "CGPA" : "Percentage"} is required`,
+                              })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                              placeholder={
+                                watch("gradeType") === "cgpa"
+                                  ? "Enter CGPA (e.g., 8.5)"
+                                  : "Enter percentage (e.g., 85)"
+                              }
+                              data-testid="input-grade"
+                            />
+                            {errors.educationGrade && (
+                              <p className="text-red-500 text-sm mt-1">
+                                {errors.educationGrade.message}
+                              </p>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bachelor's Percentage
-                      </label>
-                      <input
-                        type="number"
-                        {...register("bachelor_percentage", { min: 0, max: 100 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="Enter percentage (optional)"
-                        data-testid="input-bachelor-percentage"
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
 
-              {/* Step 2: Language Proficiency */}
+              {/* Step 2: Language Test */}
               {currentStep === 2 && (
                 <div className="space-y-6">
                   <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                      Step 2: Language Test
+                    </h4>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Language Test Type *
+                      Have you applied for language test? *
                     </label>
                     <select
-                      {...register("test_type", { required: "Please select a test type" })}
+                      {...register("hasLanguageTest", {
+                        required: "This field is required",
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                      data-testid="select-test-type"
+                      data-testid="select-language-test"
                     >
-                      <option value="">Select Test Type</option>
-                      <option value="ielts">IELTS</option>
-                      <option value="pte">PTE</option>
-                      <option value="toefl">TOEFL</option>
+                      <option value="">Select option</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
                     </select>
-                    {errors.test_type && (
-                      <p className="text-red-500 text-sm mt-1">{errors.test_type.message}</p>
+                    {errors.hasLanguageTest && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.hasLanguageTest.message}
+                      </p>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Listening *</label>
-                      <input
-                        type="number"
-                        step="0.5"
-                        {...register("listening_score", { required: "Required" })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="Score"
-                        data-testid="input-listening-score"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Reading *</label>
-                      <input
-                        type="number"
-                        step="0.5"
-                        {...register("reading_score", { required: "Required" })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="Score"
-                        data-testid="input-reading-score"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Writing *</label>
-                      <input
-                        type="number"
-                        step="0.5"
-                        {...register("writing_score", { required: "Required" })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="Score"
-                        data-testid="input-writing-score"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Speaking *</label>
-                      <input
-                        type="number"
-                        step="0.5"
-                        {...register("speaking_score", { required: "Required" })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        placeholder="Score"
-                        data-testid="input-speaking-score"
-                      />
-                    </div>
-                  </div>
+                  {/* Language Test Type */}
+                  {hasLanguageTest === "yes" && (
+                    <div className="grid lg:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Which language test? *
+                        </label>
+                        <select
+                          {...register("languageTest", {
+                            required: "Language test is required",
+                          })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                          data-testid="select-language-test-type"
+                        >
+                          <option value="">Select language test</option>
+                          <option value="ielts">IELTS</option>
+                          <option value="toefl">TOEFL</option>
+                          <option value="gre">GRE</option>
+                        </select>
+                        {errors.languageTest && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.languageTest.message}
+                          </p>
+                        )}
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Overall Score *</label>
-                    <input
-                      type="number"
-                      step="0.5"
-                      {...register("overall_score", { required: "This field is required" })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                      placeholder="Overall band score"
-                      data-testid="input-overall-score"
-                    />
-                    {errors.overall_score && (
-                      <p className="text-red-500 text-sm mt-1">{errors.overall_score.message}</p>
-                    )}
-                  </div>
+                      {/* IELTS Score */}
+                      {languageTest === "ielts" && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            What's your IELTS bands? *
+                          </label>
+                          <input
+                            type="number"
+                            step="0.5"
+                            min="0"
+                            max="9"
+                            {...register("ieltsScore", {
+                              required: "IELTS score is required",
+                            })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                            placeholder="Enter IELTS bands (e.g., 7.5)"
+                            data-testid="input-ielts-score"
+                          />
+                          {errors.ieltsScore && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.ieltsScore.message}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
