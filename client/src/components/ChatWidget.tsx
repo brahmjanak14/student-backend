@@ -35,9 +35,9 @@ export default function ChatWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-20 md:bottom-6 right-6 z-[60] w-80 sm:w-96 bg-white rounded-lg shadow-2xl flex flex-col" data-testid="chat-window">
+        <div className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-[60] w-full h-full md:w-96 md:h-auto bg-white md:rounded-lg shadow-2xl flex flex-col md:max-h-[600px]" data-testid="chat-window">
           {/* Header */}
-          <div className="bg-primary text-white p-4 rounded-t-lg flex items-center justify-between">
+          <div className="bg-primary text-white p-4 md:rounded-t-lg flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <MessageCircle className="w-5 h-5" />
@@ -57,7 +57,7 @@ export default function ChatWidget() {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 p-4 h-80 overflow-y-auto bg-gray-50">
+          <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
             <div className="bg-white rounded-lg p-3 shadow-sm mb-3">
               <p className="text-sm text-gray-700" data-testid="text-welcome-message">
                 Hello! 👋 I'm here to help you with your Canada study visa questions. How can I assist you today?
@@ -66,7 +66,7 @@ export default function ChatWidget() {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 border-t bg-white rounded-b-lg">
+          <div className="p-4 border-t bg-white md:rounded-b-lg">
             <div className="flex gap-2">
               <textarea
                 value={message}
