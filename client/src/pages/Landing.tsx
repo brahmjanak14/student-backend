@@ -3,12 +3,13 @@ import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import Footer from "../components/Footer";
+import ChatWidget from "../components/ChatWidget";
 import { CheckCircle, Users, Award, Clock, ArrowRight } from "lucide-react";
 
 export default function Landing() {
   const featuresRef = useRef<HTMLElement>(null);
   const stepsRef = useRef<HTMLElement>(null);
-  const ctaRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -23,7 +24,7 @@ export default function Landing() {
       { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     );
 
-    const elements = [featuresRef.current, stepsRef.current, ctaRef.current];
+    const elements = [featuresRef.current, stepsRef.current];
     elements.forEach((el) => {
       if (el) {
         el.classList.add('opacity-0', 'translate-y-8', 'transition-all', 'duration-700', 'ease-out');
@@ -154,37 +155,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section ref={ctaRef} className="py-20 bg-gradient-to-r from-primary to-red-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-poppins font-bold mb-4">
-            Ready to Study in Canada?
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Join thousands of students who have successfully assessed their eligibility with our tool.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="bg-white text-primary border-white hover:bg-gray-50"
-              onClick={() => window.location.href = '/eligibility'}
-              data-testid="button-check-eligibility"
-            >
-              Check Eligibility
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="lg"
-              className="text-white hover:bg-white/10"
-              onClick={() => console.log('Contact clicked')}
-              data-testid="button-contact-expert"
-            >
-              Talk to Expert
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Footer */}
+      <Footer />
+
+      {/* Chat Widget */}
+      <ChatWidget />
     </div>
   );
 }
