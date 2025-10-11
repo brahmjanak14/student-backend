@@ -1,35 +1,74 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { Download, Mail, MessageCircle, Calendar, CheckCircle, Star, Phone } from "lucide-react";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import EligibilityPDFDocument from "../components/EligibilityPDFDocument";
 
 export default function DownloadShare() {
-  const [downloading, setDownloading] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
   const [whatsappSharing, setWhatsappSharing] = useState(false);
+  const [eligibilityScore, setEligibilityScore] = useState(85);
+  const [isEligible, setIsEligible] = useState(true);
+  const [universities] = useState(12);
+  const [programs] = useState(8);
 
-  const handleDownloadPDF = async () => {
-    setDownloading(true);
-    console.log("Downloading PDF report...");
+  // Get score from URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const scoreParam = params.get('score');
+    const eligibleParam = params.get('eligible');
     
-    // Simulate download process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // In real app, this would trigger actual PDF download
-    alert("PDF report downloaded successfully!");
-    setDownloading(false);
-  };
+    if (scoreParam) {
+      setEligibilityScore(parseInt(scoreParam));
+    }
+    if (eligibleParam) {
+      setIsEligible(eligibleParam === 'true');
+    }
+  }, []);
 
   const handleEmailReport = async () => {
+    // Prompt user for email address
+    const email = prompt("Please enter your email address to receive the report:");
+    
+    if (!email) {
+      return;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+    
     setEmailSending(true);
-    console.log("Sending report via email...");
     
-    // Simulate email sending
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    alert("Report sent to your email successfully!");
-    setEmailSending(false);
+    try {
+      const response = await fetch("/api/send-report-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          score: eligibilityScore,
+          isEligible: isEligible,
+        }),
+      });
+      
+      if (response.ok) {
+        alert(`Report sent to ${email} successfully!`);
+      } else {
+        alert("Failed to send email. Please try again.");
+      }
+    } catch (error) {
+      console.error("Email error:", error);
+      alert("Failed to send email. Please try again.");
+    } finally {
+      setEmailSending(false);
+    }
   };
 
   const handleWhatsAppShare = async () => {
@@ -75,15 +114,24 @@ export default function DownloadShare() {
           <Card className="mb-8 text-center" padding="lg">
             <div className="grid md:grid-cols-3 gap-6">
               <div>
-                <div className="text-3xl font-bold text-green-600 mb-2">85%</div>
+                <div className={`text-3xl font-bold mb-2 ${
+                  eligibilityScore >= 70 ? 'text-green-600' : 
+                  eligibilityScore >= 50 ? 'text-yellow-600' : 'text-red-600'
+                }`} data-testid="text-eligibility-score">
+                  {eligibilityScore}%
+                </div>
                 <div className="text-gray-600">Eligibility Score</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-blue-600 mb-2">12</div>
+                <div className="text-3xl font-bold text-blue-600 mb-2" data-testid="text-universities">
+                  {universities}
+                </div>
                 <div className="text-gray-600">Recommended Universities</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-purple-600 mb-2">8</div>
+                <div className="text-3xl font-bold text-purple-600 mb-2" data-testid="text-programs">
+                  {programs}
+                </div>
                 <div className="text-gray-600">Suitable Programs</div>
               </div>
             </div>
@@ -100,15 +148,29 @@ export default function DownloadShare() {
               <p className="text-gray-600 text-sm mb-6">
                 Get your detailed report as a PDF file for offline access
               </p>
-              <Button 
-                variant="primary" 
-                fullWidth
-                loading={downloading}
-                onClick={handleDownloadPDF}
-                data-testid="button-download-pdf"
+              <PDFDownloadLink
+                document={
+                  <EligibilityPDFDocument 
+                    score={eligibilityScore} 
+                    isEligible={isEligible}
+                    universities={universities}
+                    programs={programs}
+                  />
+                }
+                fileName={`eligibility-report-${new Date().toISOString().split("T")[0]}.pdf`}
+                className="w-full"
               >
-                {downloading ? "Downloading..." : "Download PDF"}
-              </Button>
+                {({ loading }) => (
+                  <Button 
+                    variant="primary" 
+                    fullWidth
+                    loading={loading}
+                    data-testid="button-download-pdf"
+                  >
+                    {loading ? "Preparing PDF..." : "Download PDF"}
+                  </Button>
+                )}
+              </PDFDownloadLink>
             </Card>
 
             {/* Email Report */}

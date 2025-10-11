@@ -23,8 +23,13 @@ export default function Result() {
   });
 
   const handleUnlockReport = () => {
-    console.log("Navigating to lead capture");
-    window.location.href = '/lead-capture';
+    console.log("Navigating to download share");
+    // Pass the result data via URL parameters
+    const params = new URLSearchParams({
+      score: resultData.probabilityScore.toString(),
+      eligible: resultData.isEligible.toString()
+    });
+    window.location.href = `/download-share?${params.toString()}`;
   };
 
   const handleRetakeAssessment = () => {

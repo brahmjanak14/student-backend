@@ -55,6 +55,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send eligibility report via email
+  app.post("/api/send-report-email", async (req, res) => {
+    try {
+      const { email, score, isEligible } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email address is required" });
+      }
+
+      // Log the email request (in production, this would send actual email)
+      console.log(`Sending eligibility report to ${email}`);
+      console.log(`Score: ${score}%, Eligible: ${isEligible}`);
+      
+      // Simulate email sending delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Return success response
+      res.json({ 
+        success: true, 
+        message: "Report sent successfully",
+        email: email 
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
