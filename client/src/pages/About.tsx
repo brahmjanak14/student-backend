@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import Navbar from "../components/Navbar";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import Footer from "../components/Footer";
 import { Users, Award, Target, Globe, Star, CheckCircle } from "lucide-react";
 
 export default function About() {
@@ -223,6 +224,7 @@ export default function About() {
           </div>
         </section>
       </div>
+      <Footer />
     </div>
   );
 }

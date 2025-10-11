@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import Navbar from "../components/Navbar";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import Footer from "../components/Footer";
 import {
   MapPin,
   Phone,
@@ -465,6 +466,7 @@ export default function Contact() {
           </div>
         </section>
       </div>
+      <Footer />
     </div>
   );
 }

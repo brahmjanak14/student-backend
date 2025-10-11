@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import Navbar from "../components/Navbar";
 import Card from "../components/Card";
 import Button from "../components/Button";
+import Footer from "../components/Footer";
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 
 interface FormData {
@@ -530,6 +531,7 @@ export default function EligibilityForm() {
           </form>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
