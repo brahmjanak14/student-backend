@@ -72,6 +72,12 @@ export default function AdminLogin() {
           </div>
 
           <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm font-semibold text-blue-900 mb-2">Demo Credentials:</p>
+              <p className="text-sm text-blue-800">Username: <span className="font-mono font-bold">admin</span></p>
+              <p className="text-sm text-blue-800">Password: <span className="font-mono font-bold">admin123</span></p>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-gray-700 font-normal">

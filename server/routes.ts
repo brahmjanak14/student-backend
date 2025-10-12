@@ -82,12 +82,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin login endpoint
+  // Admin login
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { username, password } = req.body;
       
-      // Dummy authentication - accepts "admin" / "admin123"
       if (username === "admin" && password === "admin123") {
         res.json({ 
           success: true,

@@ -1,24 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { useLocation } from "wouter";
 import AdminLayout from "@/components/AdminLayout";
 import Card from "@/components/Card";
 import { Users, CheckCircle, Clock, TrendingUp } from "lucide-react";
 import type { Submission } from "@shared/schema";
 
 export default function AdminDashboard() {
-  const [, setLocation] = useLocation();
-
-  useEffect(() => {
-    const isAuthenticated = 
-      sessionStorage.getItem("isAdminAuthenticated") === "true" || 
-      localStorage.getItem("isAdminAuthenticated") === "true";
-    
-    if (!isAuthenticated) {
-      setLocation("/admin/login");
-    }
-  }, [setLocation]);
-
   const { data: submissions, isLoading } = useQuery<Submission[]>({
     queryKey: ["/api/submissions"],
   });

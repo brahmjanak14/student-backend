@@ -1,28 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
 import AdminLayout from "@/components/AdminLayout";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import { Download, Search } from "lucide-react";
+import { useState } from "react";
 import type { Submission } from "@shared/schema";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import UserPDFDocument from "@/components/UserPDFDocument";
 
 export default function AdminUsers() {
-  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
-
-  useEffect(() => {
-    const isAuthenticated = 
-      sessionStorage.getItem("isAdminAuthenticated") === "true" || 
-      localStorage.getItem("isAdminAuthenticated") === "true";
-    
-    if (!isAuthenticated) {
-      setLocation("/admin/login");
-    }
-  }, [setLocation]);
-
   const { data: submissions, isLoading } = useQuery<Submission[]>({
     queryKey: ["/api/submissions"],
   });
