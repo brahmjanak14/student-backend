@@ -109,6 +109,9 @@ export default function Footer() {
               <a href="#" className="hover:text-white transition-colors" data-testid="link-footer-terms">
                 Terms of Service
               </a>
+              <a href="/admin/login" className="hover:text-white transition-colors" data-testid="link-footer-admin">
+                Admin Panel
+              </a>
             </div>
           </div>
         </div>

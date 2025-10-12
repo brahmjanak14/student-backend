@@ -30,6 +30,7 @@ import DownloadShareExample from "@/pages/examples/DownloadShare";
 // Import admin pages
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminUsers from "@/pages/admin/Users";
+import AdminLogin from "@/pages/admin/Login";
 
 function Router() {
   return (
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/contact" component={Contact} />
       
       {/* Admin Routes */}
+      <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/users" component={AdminUsers} />
       
