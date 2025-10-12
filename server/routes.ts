@@ -82,25 +82,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin login
-  app.post("/api/admin/login", async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (username === "admin" && password === "admin123") {
-        res.json({ 
-          success: true,
-          token: "dummy-jwt-token-" + Date.now(),
-          message: "Login successful"
-        });
-      } else {
-        res.status(401).json({ error: "Invalid username or password" });
-      }
-    } catch (error) {
-      res.status(500).json({ error: "Login failed" });
-    }
-  });
-
   const httpServer = createServer(app);
 
   return httpServer;
