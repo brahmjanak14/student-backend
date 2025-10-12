@@ -3,12 +3,14 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import logoPath from "@/assets/images/pratham-international.png";
 console.log("---------------",logoPath);
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -41,7 +43,14 @@ export default function AdminLogin() {
       
       // Store JWT token
       sessionStorage.setItem("adminToken", data.token);
+      if (rememberMe) {
+        localStorage.setItem("adminToken", data.token);
+      }
+      
       sessionStorage.setItem("isAdminAuthenticated", "true");
+      if (rememberMe) {
+        localStorage.setItem("isAdminAuthenticated", "true");
+      }
       
       setLocation("/admin");
     } catch (error) {
@@ -113,6 +122,31 @@ export default function AdminLogin() {
               >
                 Log In
               </Button>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="remember"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    data-testid="checkbox-remember"
+                  />
+                  <Label
+                    htmlFor="remember"
+                    className="text-sm text-gray-700 font-normal cursor-pointer"
+                  >
+                    Remember me
+                  </Label>
+                </div>
+
+                <a
+                  href="#"
+                  className="text-sm text-cyan-600 hover:text-cyan-700"
+                  data-testid="link-forgot-password"
+                >
+                  Forgot Your Password?
+                </a>
+              </div>
             </form>
           </div>
         </div>
