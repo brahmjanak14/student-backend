@@ -153,7 +153,7 @@ export default function EligibilityForm() {
                         {...register("education", {
                           required: "Education is required",
                         })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:outline-none focus-visible:outline-none focus:border-primary focus:shadow-none transition-colors"
                         data-testid="select-education"
                       >
                         <option value="">Select your education</option>
@@ -184,7 +184,7 @@ export default function EligibilityForm() {
                               {...register("educationGrade", {
                                 required: "Percentage is required",
                               })}
-                              className="w-full px-3 py-2 border border-grey-300 rounded-lg"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:outline-none focus-visible:outline-none focus:border-primary focus:shadow-none transition-colors"
                               placeholder="Enter percentage (e.g., 85)"
                               data-testid="input-percentage"
                             />
