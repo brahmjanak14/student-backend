@@ -4,7 +4,6 @@ import Hero from "../components/Hero";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import Footer from "../components/Footer";
-import ChatWidget from "../components/ChatWidget";
 import { CheckCircle, Users, Award, Clock, ArrowRight } from "lucide-react";
 
 export default function Landing() {
@@ -157,9 +156,6 @@ export default function Landing() {
 
       {/* Footer */}
       <Footer />
-
-      {/* Chat Widget */}
-      <ChatWidget />
     </div>
   );
 }
