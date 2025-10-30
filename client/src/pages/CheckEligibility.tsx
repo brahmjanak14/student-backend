@@ -34,6 +34,7 @@ export default function CheckEligibility() {
 
   const contactForm = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
+    mode: "onSubmit",
     defaultValues: {
       fullName: "",
       email: "",
@@ -44,6 +45,7 @@ export default function CheckEligibility() {
 
   const otpForm = useForm<OTPFormData>({
     resolver: zodResolver(otpSchema),
+    mode: "onSubmit",
     defaultValues: {
       otp: "",
     },
