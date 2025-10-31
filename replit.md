@@ -32,6 +32,7 @@ Preferred communication style: Simple, everyday language.
 - **Development**: Hot module replacement via Vite development server
 - **API Structure**: RESTful API endpoints with /api prefix routing
 - **Error Handling**: Centralized error handling middleware with structured error responses
+- **Authentication**: JWT-based token authentication with role-based access control for admin routes
 
 ### Data Layer
 - **ORM**: Drizzle ORM for type-safe database operations
@@ -81,3 +82,29 @@ Preferred communication style: Simple, everyday language.
 - **ESBuild**: Fast JavaScript bundler for production builds
 - **TSX**: TypeScript execution engine for development
 - **Replit Integration**: Development environment plugins and error handling
+
+### Authentication and Security
+- **JWT Authentication**: Secure token-based authentication using jsonwebtoken library
+- **Role-Based Access**: Admin role verification for protected routes
+- **Token Management**: Automatic token injection in API requests via Authorization headers
+- **Session Handling**: Support for both session storage and persistent local storage (remember me)
+- **Auto-Logout**: Global 401/403 error handling that automatically clears tokens and redirects to login
+- **Security Features**:
+  - Cryptographically secure JWT secret generation if JWT_SECRET environment variable not set
+  - Token expiration (24 hours)
+  - Protected API endpoints require valid admin token
+  - Client-side authentication guards on admin pages
+  - Automatic token cleanup on logout
+
+## Recent Changes
+
+### October 31, 2025 - Admin Authentication Implementation
+- Added role field to users table schema for user/admin distinction
+- Implemented JWT-based authentication with proper token signing and verification
+- Created authentication middleware (authenticateToken and requireAdmin) for route protection
+- Protected all admin API endpoints (/api/submissions) with authentication middleware
+- Updated admin panel sidebar with "Logout" button (replacing "Exit Admin")
+- Implemented proper logout functionality that clears all tokens from storage
+- Added authentication guards to admin pages (Dashboard and Users) to prevent unauthorized access
+- Enhanced query client to automatically include JWT tokens in all API requests
+- Added global error handling for 401/403 responses to auto-logout and redirect users
