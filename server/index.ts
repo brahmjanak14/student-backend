@@ -13,30 +13,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // ✅ CORS configuration — allow frontend origins if needed
-const allowedOrigins = [
-  "http://localhost:5173", // You can keep if frontend runs locally
-  "https://student-frontend-7nd9.onrender.com", // Or remove if backend-only
-];
-
-const corsOptions: Parameters<typeof cors>[0] = {
-  origin: (
-    origin: string | undefined,
-    callback: (err: Error | null, allow?: boolean) => void
-  ) => {
-    if (!origin) return callback(null, true); // Allow curl, Postman, etc.
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS policy: This origin is not allowed."));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-};
-
-// ✅ Apply CORS globally
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Handle preflight requests
+app.use(
+  cors({
+    origin: [
+      "https://student-frontend-7nd9.onrender.com",
+      "http://localhost:5173",
+    ],
+    credentials: true,
+  })
+);
 
 // ✅ Root route
 app.get("/", (_req, res) => {
