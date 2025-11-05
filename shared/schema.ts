@@ -34,6 +34,16 @@ export const submissions = pgTable("submissions", {
   submittedAt: timestamp("submitted_at").defaultNow(),
 });
 
+export const contactMessages = pgTable("contact_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  submittedAt: timestamp("submitted_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -61,7 +71,14 @@ export const insertSubmissionSchema = createInsertSchema(submissions).omit({
   status: true,
 });
 
+export const insertContactMessageSchema = createInsertSchema(contactMessages).omit({
+  id: true,
+  submittedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertSubmission = z.infer<typeof insertSubmissionSchema>;
 export type Submission = typeof submissions.$inferSelect;
+export type InsertContactMessage = z.infer<typeof insertContactMessageSchema>;
+export type ContactMessage = typeof contactMessages.$inferSelect;

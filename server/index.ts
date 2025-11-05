@@ -1,11 +1,49 @@
 import express, { type Request, Response, NextFunction } from "express";
+import { createServer } from "http";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import cors from "cors";
+
+// Simple console logger
+const log = (message: string) => console.log(`[express] ${message}`);
 
 const app = express();
+
+// ✅ Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// ✅ CORS configuration — allow frontend origins if needed
+const allowedOrigins = [
+  "http://localhost:5173", // You can keep if frontend runs locally
+  "https://student-frontend-7nd9.onrender.com", // Or remove if backend-only
+];
+
+const corsOptions: Parameters<typeof cors>[0] = {
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) => {
+    if (!origin) return callback(null, true); // Allow curl, Postman, etc.
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS policy: This origin is not allowed."));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+};
+
+// ✅ Apply CORS globally
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Handle preflight requests
+
+// ✅ Root route
+app.get("/", (_req, res) => {
+  res.status(200).json({ message: "Backend API is running 🚀" });
+});
+
+// ✅ Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -24,11 +62,7 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
+      if (logLine.length > 200) logLine = logLine.slice(0, 199) + "…";
       log(logLine);
     }
   });
@@ -36,36 +70,28 @@ app.use((req, res, next) => {
   next();
 });
 
+// ✅ Async bootstrapping
 (async () => {
-  const server = await registerRoutes(app);
+  try {
+    const httpServer = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    // Global error handler
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      log(`Error: ${message}`);
+      res.status(status).json({ message });
+    });
 
-    res.status(status).json({ message });
-    throw err;
-  });
+    // ✅ Start server
+    const port = parseInt(process.env.PORT || "6000", 10);
+    const server = createServer(app);
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+    server.listen(port, "0.0.0.0", () => {
+      log(`Server running on port ${port}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
   }
-
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
 })();

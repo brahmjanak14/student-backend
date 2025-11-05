@@ -1,17 +1,26 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import type {
+  Express,
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+} from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertSubmissionSchema } from "@shared/schema";
+import {
+  insertSubmissionSchema,
+  insertContactMessageSchema,
+} from "./../shared/schema";
 import { z } from "zod";
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { calculateEligibilityScore } from "./../shared/eligibilityCalculator";
+import PDFDocument from "pdfkit";
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => {
-  console.warn("⚠️  WARNING: JWT_SECRET not set. Generating random secret. This will invalidate tokens on restart.");
-  return crypto.randomBytes(64).toString('hex');
-})();
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  "f1e47d68b5c54b9187d9d7a49a32b287b6c8e91e58b50e3d58d9024a4d6a44dcae6ac8e821db66b3f5d3c899cb4e88a3";
 
 interface AuthRequest extends Request {
   user?: {
@@ -21,49 +30,95 @@ interface AuthRequest extends Request {
   };
 }
 
-function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
+const authenticateToken: RequestHandler = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ error: "Access token required" });
+    res.status(401).json({ error: "Access token required" });
+    return; // ✅ ensure consistent return type
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string; username: string; role: string };
-    req.user = decoded;
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      id: string;
+      username: string;
+      role: string;
+    };
+
+    // Attach the decoded token to req.user
+    (req as AuthRequest).user = decoded;
+
     next();
   } catch (error) {
-    return res.status(403).json({ error: "Invalid or expired token" });
+    res.status(403).json({ error: "Invalid or expired token" });
   }
-}
+};
+const requireAdmin: RequestHandler = (req, res, next) => {
+  const user = (req as AuthRequest).user;
 
-function requireAdmin(req: AuthRequest, res: Response, next: NextFunction) {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ error: "Admin access required" });
+  if (!user || user.role !== "admin") {
+    res.status(403).json({ error: "Admin access required" });
+    return; // ✅ ensure consistent return type (void)
   }
+
   next();
-}
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all submissions (admin only)
-  app.get("/api/submissions", authenticateToken, requireAdmin, async (req, res) => {
-    try {
-      const submissions = await storage.getSubmissions();
-      res.json(submissions);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch submissions" });
+  app.get(
+    "/api/submissions",
+    authenticateToken,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const submissions = await storage.getSubmissions();
+        res.json(submissions);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to fetch submissions" });
+      }
     }
-  });
+  );
 
   // Get single submission (admin only)
-  app.get("/api/submissions/:id", authenticateToken, requireAdmin, async (req, res) => {
+  app.get(
+    "/api/submissions/:id",
+    authenticateToken,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const submission = await storage.getSubmission(req.params.id);
+        if (!submission) {
+          return res.status(404).json({ error: "Submission not found" });
+        }
+        res.json(submission);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to fetch submission" });
+      }
+    }
+  );
+
+  // Get single submission (public - no auth required for users to view their own results)
+  // Only returns non-sensitive eligibility data, not PII
+  app.get("/api/submissions/public/:id", async (req, res) => {
     try {
       const submission = await storage.getSubmission(req.params.id);
       if (!submission) {
         return res.status(404).json({ error: "Submission not found" });
       }
-      res.json(submission);
+
+      // Calculate eligibility details
+      const eligibilityResult = calculateEligibilityScore(submission);
+
+      // Only return non-sensitive eligibility data, exclude PII
+      res.json({
+        id: submission.id,
+        eligibilityScore: submission.eligibilityScore,
+        status: submission.status,
+        submittedAt: submission.submittedAt,
+        eligibilityDetails: eligibilityResult,
+      });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch submission" });
     }
@@ -73,12 +128,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/submissions", async (req, res) => {
     try {
       const validatedData = insertSubmissionSchema.parse(req.body);
-      const submission = await storage.createSubmission(validatedData);
-      
+
+      // Calculate eligibility score before creating submission
+      const eligibilityResult = calculateEligibilityScore(validatedData);
+
+      const submission = await storage.createSubmission({
+        ...validatedData,
+        eligibilityScore: eligibilityResult.score,
+        status: eligibilityResult.isEligible ? "approved" : "pending",
+      });
+
       if (!submission) {
         return res.status(500).json({ error: "Failed to create submission" });
       }
-      
+
       res.status(201).json(submission);
     } catch (error) {
       console.error("Error creating submission:", error);
@@ -91,24 +154,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update submission status (admin only)
-  app.patch("/api/submissions/:id/status", authenticateToken, requireAdmin, async (req, res) => {
-    try {
-      const { status } = req.body;
-      if (!status) {
-        return res.status(400).json({ error: "Status is required" });
+  app.patch(
+    "/api/submissions/:id/status",
+    authenticateToken,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const { status } = req.body;
+        if (!status) {
+          return res.status(400).json({ error: "Status is required" });
+        }
+        const submission = await storage.updateSubmissionStatus(
+          req.params.id,
+          status
+        );
+        if (!submission) {
+          return res.status(404).json({ error: "Submission not found" });
+        }
+        res.json(submission);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to update submission" });
       }
-      const submission = await storage.updateSubmissionStatus(req.params.id, status);
-      if (!submission) {
-        return res.status(404).json({ error: "Submission not found" });
-      }
-      res.json(submission);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to update submission" });
     }
-  });
+  );
 
   // NEW ELIGIBILITY FLOW ENDPOINTS
-  
+
   // Submit contact information and send OTP
   app.post("/api/eligibility/submit", async (req, res) => {
     try {
@@ -118,12 +189,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: z.string().min(10),
         city: z.string().min(1),
       });
-      
+
       const data = contactSchema.parse(req.body);
-      
+
       // Generate 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      
+
       // Create submission in database
       const submission = await storage.createSubmission({
         fullName: data.fullName,
@@ -134,27 +205,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         otpVerified: 0,
         status: "pending",
       });
-      
+
       if (!submission) {
         return res.status(500).json({ error: "Failed to create submission" });
       }
-      
+
       // Store OTP in submission
       await storage.updateSubmissionOtp(submission.id, otp);
-      
+
       // TODO: Send OTP via WhatsApp using Twilio
       // For now, just log it and return it in development mode
       console.log(`📱 WhatsApp OTP for ${data.phone}: ${otp}`);
       console.log(`Submission ID: ${submission.id}`);
-      
+
       // In development mode, return OTP in response for testing
       const isDevelopment = process.env.NODE_ENV === "development";
-      
-      res.json({ 
+
+      res.json({
         id: submission.id,
         message: "OTP sent to WhatsApp",
         // Only send OTP in development for testing
-        ...(isDevelopment && { otpCode: otp })
+        ...(isDevelopment && { otpCode: otp }),
       });
     } catch (error) {
       console.error("Error submitting contact:", error);
@@ -173,34 +244,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         submissionId: z.string(),
         otp: z.string().length(6),
       });
-      
+
       const { submissionId, otp } = verifySchema.parse(req.body);
-      
+
       // Verify OTP
       const isValid = await storage.verifyOtp(submissionId, otp);
-      
+
       if (!isValid) {
         return res.status(400).json({ error: "Invalid OTP code" });
       }
-      
-      // Calculate eligibility score (random for now, 70-95%)
-      const score = Math.floor(70 + Math.random() * 26);
-      
-      // Update submission with score
-      const updated = await storage.updateEligibilityScore(submissionId, score);
-      
-      if (!updated) {
-        return res.status(500).json({ error: "Failed to update eligibility score" });
+
+      // Get the submission to calculate score based on actual data
+      const submission = await storage.getSubmission(submissionId);
+      if (!submission) {
+        return res.status(404).json({ error: "Submission not found" });
       }
-      
-      const message = score >= 80
-        ? "You have a strong profile for Canada study visa. Consider improving your writing score to increase chances further."
-        : "You have a good profile for Canada study visa. We recommend improving your language test scores.";
-      
-      res.json({ 
-        score,
-        message,
-        isEligible: score >= 70
+
+      // Calculate eligibility score based on actual user data
+      const eligibilityResult = calculateEligibilityScore(submission);
+
+      // Update submission with calculated score
+      const updated = await storage.updateEligibilityScore(
+        submissionId,
+        eligibilityResult.score
+      );
+
+      if (!updated) {
+        return res
+          .status(500)
+          .json({ error: "Failed to update eligibility score" });
+      }
+
+      res.json({
+        score: eligibilityResult.score,
+        message: eligibilityResult.suggestion,
+        isEligible: eligibilityResult.isEligible,
       });
     } catch (error) {
       console.error("Error verifying OTP:", error);
@@ -212,90 +290,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Download PDF report
-  app.get("/api/eligibility/download-pdf/:id", async (req, res) => {
-    try {
-      const submission = await storage.getSubmission(req.params.id);
-      
-      if (!submission) {
-        return res.status(404).json({ error: "Submission not found" });
-      }
-      
-      if (!submission.otpVerified) {
-        return res.status(403).json({ error: "Phone number not verified" });
-      }
-      
-      // Generate PDF using React.createElement
-      const pdfDoc = React.createElement(
-        Document,
-        null,
-        React.createElement(
-          Page,
-          { size: "A4", style: pdfStyles.page },
-          React.createElement(
-            View,
-            { style: pdfStyles.header },
-            React.createElement(Text, { style: pdfStyles.title }, "Canada Study Visa"),
-            React.createElement(Text, { style: pdfStyles.subtitle }, "Eligibility Report")
-          ),
-          React.createElement(
-            View,
-            { style: pdfStyles.section },
-            React.createElement(Text, { style: pdfStyles.sectionTitle }, "Personal Information"),
-            React.createElement(Text, { style: pdfStyles.text }, `Name: ${submission.fullName}`),
-            React.createElement(Text, { style: pdfStyles.text }, `Email: ${submission.email}`),
-            React.createElement(Text, { style: pdfStyles.text }, `Phone: ${submission.phone}`),
-            React.createElement(Text, { style: pdfStyles.text }, `City: ${submission.city}`)
-          ),
-          React.createElement(
-            View,
-            { style: pdfStyles.section },
-            React.createElement(Text, { style: pdfStyles.sectionTitle }, "Eligibility Assessment"),
-            React.createElement(Text, { style: pdfStyles.scoreText }, `Probability Score: ${submission.eligibilityScore}%`),
-            React.createElement(
-              Text,
-              { style: pdfStyles.text },
-              `Status: ${submission.eligibilityScore && submission.eligibilityScore >= 70 ? "Eligible" : "Not Eligible"}`
-            )
-          ),
-          React.createElement(
-            View,
-            { style: pdfStyles.section },
-            React.createElement(Text, { style: pdfStyles.sectionTitle }, "Recommendation"),
-            React.createElement(
-              Text,
-              { style: pdfStyles.text },
-              submission.eligibilityScore && submission.eligibilityScore >= 80
-                ? "You have a strong profile for Canada study visa. Consider improving your writing score to increase chances further."
-                : "You have a good profile for Canada study visa. We recommend improving your language test scores."
-            )
-          ),
-          React.createElement(
-            View,
-            { style: pdfStyles.footer },
-            React.createElement(Text, { style: pdfStyles.footerText }, `Generated on ${new Date().toLocaleDateString()}`)
-          )
-        )
-      );
-      
-      // Generate PDF buffer
-      const pdfBuffer = await pdf(pdfDoc).toBuffer();
-      
-      // Set response headers
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=eligibility-report-${submission.id}.pdf`);
-      res.send(pdfBuffer);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      res.status(500).json({ error: "Failed to generate PDF" });
-    }
-  });
+  // // Download PDF report
+  // app.get("/api/eligibility/download-pdf/:id", async (req, res: Response) => {
+  //   const submission = await storage.getSubmission(req.params.id);
+  //   if (!submission) return res.status(404).json({ error: "Not found" });
 
+  //   const doc = new PDFDocument();
+  //   const chunks: Buffer[] = [];
+
+  //   doc.on("data", (chunk: Buffer<ArrayBufferLike>) => chunks.push(chunk));
+  //   doc.on("end", () => {
+  //     const pdfBuffer = Buffer.concat(chunks);
+  //     res.setHeader("Content-Type", "application/pdf");
+  //     res.setHeader(
+  //       "Content-Disposition",
+  //       `attachment; filename=eligibility-report-${submission.id}.pdf`
+  //     );
+  //     res.send(pdfBuffer);
+  //   });
+
+  //   doc
+  //     .fontSize(20)
+  //     .text("Canada Study Visa Eligibility Report", { align: "center" });
+  //   doc.moveDown();
+  //   doc.fontSize(12).text(`Name: ${submission.fullName}`);
+  //   doc.text(`Email: ${submission.email}`);
+  //   doc.text(`Phone: ${submission.phone}`);
+  //   doc.text(`City: ${submission.city}`);
+  //   doc.moveDown();
+  //   doc.text(`Eligibility Score: ${submission.eligibilityScore}%`);
+  //   doc.text(
+  //     `Status: ${
+  //       submission.eligibilityScore >= 70 ? "Eligible" : "Not Eligible"
+  //     }`
+  //   );
+  //   doc.end();
+  // });
   // Send eligibility report via email
   app.post("/api/send-report-email", async (req, res) => {
     try {
       const { email, score, isEligible } = req.body;
-      
+
       if (!email) {
         return res.status(400).json({ error: "Email address is required" });
       }
@@ -303,15 +338,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the email request (in production, this would send actual email)
       console.log(`Sending eligibility report to ${email}`);
       console.log(`Score: ${score}%, Eligible: ${isEligible}`);
-      
+
       // Simulate email sending delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Return success response
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: "Report sent successfully",
-        email: email 
+        email: email,
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to send email" });
@@ -322,22 +357,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      
+
       if (username === "admin" && password === "admin123") {
         const token = jwt.sign(
-          { 
+          {
             id: "admin-id",
             username: "admin",
-            role: "admin"
+            role: "admin",
           },
           JWT_SECRET,
           { expiresIn: "24h" }
         );
-        
-        res.json({ 
+
+        res.json({
           success: true,
           token: token,
-          message: "Login successful"
+          message: "Login successful",
         });
       } else {
         res.status(401).json({ error: "Invalid username or password" });
@@ -347,67 +382,152 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Contact messages endpoints
+  app.get(
+    "/api/contact-messages",
+    authenticateToken,
+    requireAdmin,
+    async (req, res) => {
+      try {
+        const messages = await storage.getContactMessages();
+        res.json(messages);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to fetch contact messages" });
+      }
+    }
+  );
+
+  app.post("/api/contact-messages", async (req, res) => {
+    try {
+      const validatedData = insertContactMessageSchema.parse(req.body);
+      const message = await storage.createContactMessage(validatedData);
+
+      if (!message) {
+        return res
+          .status(500)
+          .json({ error: "Failed to create contact message" });
+      }
+
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error creating contact message:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid contact message data" });
+      }
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Define your PDF styles (not using StyleSheet)
+  const pdfStyles = {
+    colors: {
+      primary: "#dc2626",
+      textDark: "#1f2937",
+      textGray: "#374151",
+      success: "#059669",
+      border: "#e5e7eb",
+    },
+    fonts: {
+      base: "Helvetica",
+      bold: "Helvetica-Bold",
+    },
+    spacing: {
+      section: 25,
+      line: 6,
+    },
+  };
+
+  // Route to generate PDF
+  app.get("/api/eligibility/download-pdf/:id", async (req, res: Response) => {
+    const submission = await storage.getSubmission(req.params.id);
+    if (!submission) return res.status(404).json({ error: "Not found" });
+
+    const doc = new PDFDocument({ margin: 40 });
+    const chunks: Buffer[] = [];
+
+    doc.on("data", (chunk) => chunks.push(chunk));
+    doc.on("end", () => {
+      const pdfBuffer = Buffer.concat(chunks);
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=eligibility-report-${submission.id}.pdf`
+      );
+      res.send(pdfBuffer);
+    });
+
+    // ===== Header =====
+    doc
+      .font(pdfStyles.fonts.bold)
+      .fontSize(28)
+      .fillColor(pdfStyles.colors.primary)
+      .text("Canada Study Visa Eligibility Report", { align: "center" })
+      .moveDown(0.5);
+
+    doc
+      .font(pdfStyles.fonts.base)
+      .fontSize(16)
+      .fillColor(pdfStyles.colors.textGray)
+      .text("Assessment Summary", { align: "center" })
+      .moveDown(2);
+
+    // ===== User Info Section =====
+    doc
+      .font(pdfStyles.fonts.bold)
+      .fontSize(16)
+      .fillColor(pdfStyles.colors.textDark)
+      .text("Applicant Details", { underline: true })
+      .moveDown(1);
+
+    doc
+      .font(pdfStyles.fonts.base)
+      .fontSize(12)
+      .fillColor(pdfStyles.colors.textGray)
+      .text(`Name: ${submission.fullName}`)
+      .text(`Email: ${submission.email}`)
+      .text(`Phone: ${submission.phone}`)
+      .text(`City: ${submission.city}`)
+      .moveDown(2);
+
+    // ===== Eligibility Section =====
+    doc
+      .font(pdfStyles.fonts.bold)
+      .fontSize(16)
+      .fillColor(pdfStyles.colors.textDark)
+      .text("Eligibility Results", { underline: true })
+      .moveDown(1);
+
+    doc
+      .font(pdfStyles.fonts.base)
+      .fontSize(12)
+      .fillColor(pdfStyles.colors.textGray)
+      .text(`Eligibility Score: ${submission.eligibilityScore}%`)
+      .moveDown(0.5);
+
+    const isEligible = submission.eligibilityScore! >= 70;
+    doc
+      .font(pdfStyles.fonts.bold)
+      .fontSize(20)
+      .fillColor(
+        isEligible ? pdfStyles.colors.success : pdfStyles.colors.primary
+      )
+      .text(isEligible ? "Eligible" : "Not Eligible");
+
+    // ===== Footer =====
+    doc
+      .moveDown(3)
+      .font(pdfStyles.fonts.base)
+      .fontSize(10)
+      .fillColor(pdfStyles.colors.textGray)
+      .text("Generated by Canada Study Visa Eligibility System", {
+        align: "center",
+      })
+      .text("© 2025 All rights reserved.", { align: "center" });
+
+    doc.end();
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
 }
-
-// PDF Styles
-const pdfStyles = StyleSheet.create({
-  page: {
-    padding: 40,
-    fontFamily: 'Helvetica',
-  },
-  header: {
-    marginBottom: 30,
-    textAlign: 'center',
-    borderBottom: '2 solid #dc2626',
-    paddingBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#dc2626',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#4b5563',
-  },
-  section: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 12,
-    borderBottom: '1 solid #e5e7eb',
-    paddingBottom: 6,
-  },
-  text: {
-    fontSize: 12,
-    color: '#374151',
-    marginBottom: 6,
-    lineHeight: 1.5,
-  },
-  scoreText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#059669',
-    marginBottom: 10,
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 40,
-    right: 40,
-    textAlign: 'center',
-    borderTop: '1 solid #e5e7eb',
-    paddingTop: 15,
-  },
-  footerText: {
-    fontSize: 10,
-    color: '#6b7280',
-  },
-});
